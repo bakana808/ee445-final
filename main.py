@@ -9,6 +9,7 @@ import warnings
 
 from sklearn.svm import SVC, LinearSVC
 from sklearn.metrics import mean_squared_error, accuracy_score
+from models import SVMClassifier
 
 import matplotlib.pyplot as plt
 
@@ -74,7 +75,7 @@ display_samples(tr_data)
 
 # parameters
 num_epochs = [*range(50, 200, 10)]
-regularization = 200
+regularization = 100
 perc_dataset = 0.25
 perc_valid = 0.10
 
@@ -85,28 +86,24 @@ print("%.2f%% training data (%d samples), %.2f%% validation (%d samples)" % (per
 errors_train = []
 errors_valid = []
 
-
 for epochs in num_epochs:
 
-    clf = SVC(
-        C=regularization,
-        max_iter=epochs,
-        kernel="rbf",
-        decision_function_shape="ovo"
-    )
+    model = SVMClassifier(regularization=regularization, epochs=epochs)
 
-    clf.fit(X_train, Y_train)
+    model.train(X_train, Y_train)
 
     # error rate for training set
-    error_train = 1 - accuracy_score(Y_train, clf.predict(X_train))
+    error_train = model.get_error(X_train, Y_train)
 
     # error rate for validation set
-    error_valid = 1 - accuracy_score(Y_valid, clf.predict(X_valid))
+    error_valid = model.get_error(X_valid, Y_valid)
 
     print("epochs -> %d \t train error -> %.06f \t valid error -> %.06f" % (epochs, error_train, error_valid))
 
     errors_train.append(error_train)
     errors_valid.append(error_valid)
+
+    model.write(f"models/svm_c{regularization}_{epochs}")
 
 
 f = plt.figure(figsize = (15,6)) #figure 
